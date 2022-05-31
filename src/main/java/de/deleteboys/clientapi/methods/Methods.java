@@ -47,7 +47,9 @@ public class Methods {
         try {
             BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(ClientApi.getSocket().getOutputStream()));
             String packet = gson.toJson(jsonObject);
-            writer.write(ClientApi.rsa.encrypt(packet,ClientApi.getServerPublicKey()));
+            String encryptedPacket = ClientApi.rsa.encrypt(packet, ClientApi.getServerPublicKey());
+            Logger.logPacketsSend("Encrypted: " + encryptedPacket + " Decrypted:" + packet);
+            writer.write(encryptedPacket);
             writer.newLine();
             writer.flush();
         } catch (IOException e) {
@@ -58,7 +60,9 @@ public class Methods {
     public void sendJson(JsonObject jsonObject) {
         try {
             BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(ClientApi.getSocket().getOutputStream()));
-            writer.write(gson.toJson(jsonObject));
+            String packet = gson.toJson(jsonObject);
+            Logger.logPacketsSend(packet);
+            writer.write(packet);
             writer.newLine();
             writer.flush();
         } catch (IOException e) {

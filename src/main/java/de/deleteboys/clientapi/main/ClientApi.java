@@ -52,7 +52,7 @@ public class ClientApi {
                 super.run();
                 try {
                     setSocket(new Socket(ip, port));
-                    Logger.info("Connected to" + ip);
+                    Logger.info("Connected to " + ip);
                     rsa = new RSA();
                     String publicKey = Base64.getEncoder().encodeToString(rsa.publicKey.getEncoded());
                     packetManager.sendPacket(new RSAPacket().init(publicKey));
@@ -64,6 +64,7 @@ public class ClientApi {
                                 if (methods.isJson(line)) {
                                     try {
                                         JsonObject jsonObject = methods.gson.fromJson(line, JsonObject.class);
+                                        Logger.logPacketsGet(line);
                                         if (jsonObject.has("packet")) {
                                             for (Packet packet : getPacketManager().getPackets()) {
                                                 if (packet.getPacketName().equals(jsonObject.get("packet").getAsString())) {
@@ -79,7 +80,8 @@ public class ClientApi {
                                     }
                                 } else {
                                     String decryptedString = rsa.decrypt(line);
-                                    if(methods.isJson(decryptedString)) {
+                                    Logger.logPacketsGet("Encrypted: " + line + " Decrypted: " + decryptedString);
+                                    if (methods.isJson(decryptedString)) {
                                         JsonObject jsonObject = methods.gson.fromJson(decryptedString, JsonObject.class);
                                         if (jsonObject.has("packet")) {
                                             for (Packet packet : getPacketManager().getPackets()) {
@@ -145,6 +147,14 @@ public class ClientApi {
 
     public static void saveCurrentLog() {
         logger.saveLog();
+    }
+
+    public static void setPacketLog(boolean state) {
+        logger.setPacketLog(state);
+    }
+
+    public static boolean isPacketLog() {
+        return logger.isPacketLog();
     }
 
 }

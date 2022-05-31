@@ -15,7 +15,7 @@ public class RSAPacket extends Packet {
     @Override
     public void read(JsonObject jsonObject) {
         if(jsonObject.has("publicKey")) {
-            ClientApi.setServerPublicKey(ClientApi.methods.stringToPublicKey(jsonObject.get("publicKey").getAsString()));
+            ClientApi.setServerPublicKey(ClientApi.getMethods().stringToPublicKey(jsonObject.get("publicKey").getAsString()));
         }
     }
 
@@ -24,7 +24,7 @@ public class RSAPacket extends Packet {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("packet", this.getPacketName());
         jsonObject.addProperty("publicKey", key);
-        ClientApi.methods.sendJson(jsonObject);
+        ClientApi.getMethods().sendJson(jsonObject);
     }
 
     public RSAPacket init(String key) {

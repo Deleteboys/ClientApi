@@ -16,11 +16,28 @@ import java.util.ArrayList;
 public class Logger {
 
     private static ArrayList<String> loggerList = new ArrayList<>();
+    private boolean packetLog = true;
 
     public static void info(String message) {
         String infoString = getCurrentTime() + " [Info] " + message;
         System.out.println(infoString);
         addToLogger(infoString);
+    }
+
+    public static void logPacketsSend(String message) {
+        if (ClientApi.isPacketLog()) {
+            String packetLogString = getCurrentTime() + " [PacketLog send] " + message;
+            System.out.println(packetLogString);
+            addToLogger(packetLogString);
+        }
+    }
+
+    public static void logPacketsGet(String message) {
+        if (ClientApi.isPacketLog()) {
+            String packetLogString = getCurrentTime() + " [PacketLog get] " + message;
+            System.out.println(packetLogString);
+            addToLogger(packetLogString);
+        }
     }
 
     public static void error(String message) {
@@ -55,13 +72,13 @@ public class Logger {
         }
         try {
             Path path = Paths.get(ClientApi.getLogPath());
-            if(!Files.exists(path)) {
+            if (!Files.exists(path)) {
                 Files.createDirectories(path);
             }
             if (file.createNewFile()) {
                 PrintWriter printWriter = new PrintWriter(fileName, StandardCharsets.UTF_8);
                 for (String s : loggerList) {
-                    printWriter.write(s+"\n");
+                    printWriter.write(s + "\n");
                 }
                 printWriter.close();
                 Logger.info("Saved Log " + fileName);
@@ -72,4 +89,11 @@ public class Logger {
 
     }
 
+    public boolean isPacketLog() {
+        return packetLog;
+    }
+
+    public void setPacketLog(boolean packetLog) {
+        this.packetLog = packetLog;
+    }
 }
