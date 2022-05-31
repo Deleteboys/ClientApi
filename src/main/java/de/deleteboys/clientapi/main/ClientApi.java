@@ -1,6 +1,7 @@
 package de.deleteboys.clientapi.main;
 
 import com.google.gson.JsonObject;
+import de.deleteboys.clientapi.methods.Logger;
 import de.deleteboys.clientapi.methods.Methods;
 import de.deleteboys.clientapi.methods.RSA;
 import de.deleteboys.clientapi.packetsystem.Packet;
@@ -20,7 +21,7 @@ import java.util.Base64;
 
 public class ClientApi {
 
-    public static Methods methods;
+    private static Methods methods;
     private String ip;
     private int port;
 
@@ -29,7 +30,11 @@ public class ClientApi {
     public PacketManager packetManager;
 
     private static PublicKey serverPublicKey;
+
+    protected static Logger logger;
     public static RSA rsa;
+
+    private static String logPath = "log/";
 
     public ClientApi(String ip, int port) {
         this.ip = ip;
@@ -37,6 +42,7 @@ public class ClientApi {
         methods = new Methods();
         this.packetManager = new PacketManager();
         packetManager.init();
+        logger = new Logger();
     }
 
     public void connectClient() {
@@ -46,6 +52,7 @@ public class ClientApi {
                 super.run();
                 try {
                     setSocket(new Socket(ip, port));
+                    Logger.info("Connected to" + ip);
                     rsa = new RSA();
                     String publicKey = Base64.getEncoder().encodeToString(rsa.publicKey.getEncoded());
                     packetManager.sendPacket(new RSAPacket().init(publicKey));
@@ -66,24 +73,34 @@ public class ClientApi {
                                         }
                                     } catch (Exception e) {
                                         socket.close();
-                                        e.printStackTrace();
+                                        Logger.info("Your connection got disconnected");
+                                        Logger.error(e.getMessage());
                                         break;
                                     }
                                 } else {
-
+                                    String decryptedString = rsa.decrypt(line);
+                                    if(methods.isJson(decryptedString)) {
+                                        JsonObject jsonObject = methods.gson.fromJson(decryptedString, JsonObject.class);
+                                        if (jsonObject.has("packet")) {
+                                            for (Packet packet : getPacketManager().getPackets()) {
+                                                if (packet.getPacketName().equals(jsonObject.get("packet").getAsString())) {
+                                                    packet.read(jsonObject);
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
                             } else {
                                 socket.close();
                             }
                         } catch (SocketException e) {
-                            ClientApi.methods.consoleLog("Your connection got disconnected");
+                            Logger.info("Your connection got disconnected");
                             socket.close();
                             break;
                         }
                     }
-                } catch (
-                        IOException e) {
-                    ClientApi.methods.consoleLog("Can not connect to server");
+                } catch (IOException e) {
+                    Logger.error("Can not connect to server");
                 }
             }
         };
@@ -113,4 +130,21 @@ public class ClientApi {
     public synchronized PacketManager getPacketManager() {
         return packetManager;
     }
+
+    public static Methods getMethods() {
+        return methods;
+    }
+
+    public static String getLogPath() {
+        return logPath;
+    }
+
+    public static void setLogPath(String logPath) {
+        ClientApi.logPath = logPath;
+    }
+
+    public static void saveCurrentLog() {
+        logger.saveLog();
+    }
+
 }
