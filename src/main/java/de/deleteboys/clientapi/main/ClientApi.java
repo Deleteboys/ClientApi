@@ -32,6 +32,9 @@ public class ClientApi {
     private static RSA rsa;
     private static String logPath = "log/";
     private static boolean running = true;
+    private static boolean logInFile = true;
+    private static boolean consoleLog = true;
+    private static Thread thread;
 
     public ClientApi(String ip, int port) {
         this.ip = ip;
@@ -40,17 +43,18 @@ public class ClientApi {
         this.packetManager = new PacketManager();
         packetManager.init();
         logger = new Logger();
+        rsa = new RSA();
+        serverPublicKey = null;
     }
 
     public void connectClient() {
-        Thread thread = new Thread() {
+        thread = new Thread() {
             @Override
             public void run() {
                 super.run();
                 try {
                     setSocket(new Socket(ip, port));
                     Logger.info("Connected to " + ip);
-                    rsa = new RSA();
                     String publicKey = Base64.getEncoder().encodeToString(rsa.publicKey.getEncoded());
                     packetManager.sendPacket(new RSAPacket().init(publicKey));
                     while (socket.isConnected() && isRunning()) {
@@ -172,4 +176,23 @@ public class ClientApi {
         }
     }
 
+    public static boolean isLogInFile() {
+        return logInFile;
+    }
+
+    public static void setLogInFile(boolean logInFile) {
+        ClientApi.logInFile = logInFile;
+    }
+
+    public static boolean isConsoleLog() {
+        return consoleLog;
+    }
+
+    public static void setConsoleLog(boolean consoleLog) {
+        ClientApi.consoleLog = consoleLog;
+    }
+
+    public static Thread getThread() {
+        return thread;
+    }
 }

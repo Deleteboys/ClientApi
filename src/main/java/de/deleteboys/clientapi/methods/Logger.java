@@ -19,31 +19,43 @@ public class Logger {
     private boolean packetLog = true;
 
     public static void info(String message) {
-        String infoString = getCurrentTime() + " [Info] " + message;
-        System.out.println(infoString);
-        addToLogger(infoString);
+        if(ClientApi.isConsoleLog()) {
+            String infoString = getCurrentTime() + " [Info] " + message;
+            System.out.println(infoString);
+            if (ClientApi.isLogInFile())
+                addToLogger(infoString);
+        }
     }
 
     public static void logPacketsSend(String message) {
-        if (ClientApi.isPacketLog()) {
-            String packetLogString = getCurrentTime() + " [PacketLog send] " + message;
-            System.out.println(packetLogString);
-            addToLogger(packetLogString);
+        if(ClientApi.isConsoleLog()) {
+            if (ClientApi.isPacketLog()) {
+                String packetLogString = getCurrentTime() + " [PacketLog send] " + message;
+                System.out.println(packetLogString);
+                if (ClientApi.isLogInFile())
+                    addToLogger(packetLogString);
+            }
         }
     }
 
     public static void logPacketsGet(String message) {
-        if (ClientApi.isPacketLog()) {
-            String packetLogString = getCurrentTime() + " [PacketLog get] " + message;
-            System.out.println(packetLogString);
-            addToLogger(packetLogString);
+        if(ClientApi.isConsoleLog()) {
+            if (ClientApi.isPacketLog()) {
+                String packetLogString = getCurrentTime() + " [PacketLog get] " + message;
+                System.out.println(packetLogString);
+                if (ClientApi.isLogInFile())
+                    addToLogger(packetLogString);
+            }
         }
     }
 
     public static void error(String message) {
-        String errorString = getCurrentTime() + " [Error] " + message;
-        System.out.println(errorString);
-        addToLogger(errorString);
+        if(ClientApi.isConsoleLog()) {
+            String errorString = getCurrentTime() + " [Error] " + message;
+            System.out.println(errorString);
+            if (ClientApi.isLogInFile())
+                addToLogger(errorString);
+        }
     }
 
     private static String getCurrentTime() {
