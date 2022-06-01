@@ -26,15 +26,12 @@ public class ClientApi {
     private int port;
 
     private static Socket socket;
-
     public PacketManager packetManager;
-
     private static PublicKey serverPublicKey;
-
     protected static Logger logger;
-    public static RSA rsa;
-
+    private static RSA rsa;
     private static String logPath = "log/";
+    private static boolean running = true;
 
     public ClientApi(String ip, int port) {
         this.ip = ip;
@@ -56,7 +53,7 @@ public class ClientApi {
                     rsa = new RSA();
                     String publicKey = Base64.getEncoder().encodeToString(rsa.publicKey.getEncoded());
                     packetManager.sendPacket(new RSAPacket().init(publicKey));
-                    while (socket.isConnected()) {
+                    while (socket.isConnected() && isRunning()) {
                         BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                         try {
                             String line = reader.readLine();
@@ -155,6 +152,24 @@ public class ClientApi {
 
     public static boolean isPacketLog() {
         return logger.isPacketLog();
+    }
+
+    public static RSA getRsa() {
+        return rsa;
+    }
+
+    public synchronized static boolean isRunning() {
+        return running;
+    }
+
+    public static void disconnect() {
+        try {
+            running = false;
+            Logger.info("Disconnected");
+            socket.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }

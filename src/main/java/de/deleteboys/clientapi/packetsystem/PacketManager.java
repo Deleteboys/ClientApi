@@ -1,5 +1,6 @@
 package de.deleteboys.clientapi.packetsystem;
 
+import de.deleteboys.clientapi.main.ClientApi;
 import de.deleteboys.clientapi.packetsystem.packets.RSAPacket;
 
 import java.util.ArrayList;
@@ -33,7 +34,11 @@ public class PacketManager {
     }
 
     public synchronized void sendPacket(Packet packet) {
-        packet.write();
+        if (ClientApi.getServerPublicKey() != null) {
+            ClientApi.getMethods().encryptAndSendPacket(packet.write());
+        } else {
+            ClientApi.getMethods().sendJson(packet.write());
+        }
     }
 
     public synchronized ArrayList<Packet> getPackets() {

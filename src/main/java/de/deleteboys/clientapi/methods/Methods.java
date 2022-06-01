@@ -47,7 +47,7 @@ public class Methods {
         try {
             BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(ClientApi.getSocket().getOutputStream()));
             String packet = gson.toJson(jsonObject);
-            String encryptedPacket = ClientApi.rsa.encrypt(packet, ClientApi.getServerPublicKey());
+            String encryptedPacket = ClientApi.getRsa().encrypt(packet, ClientApi.getServerPublicKey());
             Logger.logPacketsSend("Encrypted: " + encryptedPacket + " Decrypted:" + packet);
             writer.write(encryptedPacket);
             writer.newLine();
