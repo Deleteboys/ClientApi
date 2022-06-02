@@ -26,7 +26,7 @@ public class ClientApi {
     private int port;
 
     private static Socket socket;
-    public PacketManager packetManager;
+    public static PacketManager packetManager;
     private static PublicKey serverPublicKey;
     protected static Logger logger;
     private static RSA rsa;
@@ -64,15 +64,8 @@ public class ClientApi {
                             if (line != null) {
                                 if (methods.isJson(line)) {
                                     try {
-                                        JsonObject jsonObject = methods.gson.fromJson(line, JsonObject.class);
                                         Logger.logPacketsGet(line);
-                                        if (jsonObject.has("packet")) {
-                                            for (Packet packet : getPacketManager().getPackets()) {
-                                                if (packet.getPacketName().equals(jsonObject.get("packet").getAsString())) {
-                                                    packet.read(jsonObject);
-                                                }
-                                            }
-                                        }
+                                        methods.handelPacketInput(line);
                                     } catch (Exception e) {
                                         socket.close();
                                         Logger.info("Your connection got disconnected");
@@ -82,16 +75,7 @@ public class ClientApi {
                                 } else {
                                     String decryptedString = rsa.decrypt(line);
                                     Logger.logPacketsGet("Encrypted: " + line + " Decrypted: " + decryptedString);
-                                    if (methods.isJson(decryptedString)) {
-                                        JsonObject jsonObject = methods.gson.fromJson(decryptedString, JsonObject.class);
-                                        if (jsonObject.has("packet")) {
-                                            for (Packet packet : getPacketManager().getPackets()) {
-                                                if (packet.getPacketName().equals(jsonObject.get("packet").getAsString())) {
-                                                    packet.read(jsonObject);
-                                                }
-                                            }
-                                        }
-                                    }
+                                    methods.handelPacketInput(decryptedString);
                                 }
                             } else {
                                 socket.close();
@@ -130,7 +114,7 @@ public class ClientApi {
         ClientApi.serverPublicKey = serverPublicKey;
     }
 
-    public synchronized PacketManager getPacketManager() {
+    public static synchronized PacketManager getPacketManager() {
         return packetManager;
     }
 
