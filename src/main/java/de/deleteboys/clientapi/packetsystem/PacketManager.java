@@ -11,6 +11,7 @@ import java.util.UUID;
 public class PacketManager {
 
     private ArrayList<Packet> packets = new ArrayList<>();
+    private int splitPacketDelay = 10;
 
     public void init() {
         registerPackets(RSAPacket.class);
@@ -39,32 +40,45 @@ public class PacketManager {
 
     public synchronized void sendPacket(Packet packet) {
         JsonObject jsonPacket = packet.write();
-        String packetAsString = ClientApi.getMethods().gson.toJson(jsonPacket);
+        String packetAsString = ClientApi.getClientApi().getMethods().gson.toJson(jsonPacket);
         if (packet instanceof SendSplitPacket) {
-            ClientApi.getMethods().sendSplitPacket(packet.write());
+            ClientApi.getClientApi().getMethods().sendSplitPacket(packet.write());
             return;
         }
-        if (ClientApi.getServerPublicKey() != null) {
-            if (ClientApi.getMethods().getNumberOfChars(packetAsString) > 117) {
+        if (ClientApi.getClientApi().getServerPublicKey() != null) {
+            if (ClientApi.getClientApi().getMethods().getNumberOfChars(packetAsString) > 117) {
                 String[] splitList = packetAsString.split("(?<=\\G.{" + 117 + "})");
                 String uuid = UUID.randomUUID().toString();
-                for (int i = 0; i < splitList.length; i++) {
-                    try {
-                        sendPacket(new SendSplitPacket().input(uuid, i + 1, splitList.length, splitList[i]));
-                        Thread.sleep(100);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
+                if (ClientApi.getClientApi().getPacketSplitType() == PacketSplitType.DEFAULT) {
+                    for (int i = 0; i < splitList.length; i++) {
+                        try {
+                            sendPacket(new SendSplitPacket().input(uuid, i + 1, splitList.length, splitList[i], ClientApi.getClientApi().getPacketSplitType()));
+                            Thread.sleep(100);
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
                     }
+                } else if (ClientApi.getClientApi().getPacketSplitType() == PacketSplitType.ONELARGE) {
+                    sendPacket(new SendSplitPacket().input(uuid, ClientApi.getClientApi().getPacketSplitType(), splitList));
                 }
                 return;
             }
-            ClientApi.getMethods().encryptAndSendPacket(packet.write());
+            ClientApi.getClientApi().getMethods().encryptAndSendPacket(packet.write());
         } else {
-            ClientApi.getMethods().sendJson(packet.write());
+            ClientApi.getClientApi().getMethods().sendJson(packet.write());
         }
     }
 
     public synchronized ArrayList<Packet> getPackets() {
         return packets;
+    }
+
+
+    public int getSplitPacketDelay() {
+        return splitPacketDelay;
+    }
+
+    public void setSplitPacketDelay(int splitPacketDelay) {
+        this.splitPacketDelay = splitPacketDelay;
     }
 }

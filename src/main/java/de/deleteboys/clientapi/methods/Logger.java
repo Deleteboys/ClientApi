@@ -19,41 +19,41 @@ public class Logger {
     private boolean packetLog = true;
 
     public static void info(String message) {
-        if(ClientApi.isConsoleLog()) {
+        if(ClientApi.getClientApi().isConsoleLog()) {
             String infoString = getCurrentTime() + " [Info] " + message;
             System.out.println(infoString);
-            if (ClientApi.isLogInFile())
+            if (ClientApi.getClientApi().isLogInFile())
                 addToLogger(infoString);
         }
     }
 
     public static void logPacketsSend(String message) {
-        if(ClientApi.isConsoleLog()) {
-            if (ClientApi.isPacketLog()) {
+        if(ClientApi.getClientApi().isConsoleLog()) {
+            if (ClientApi.getClientApi().isPacketLog()) {
                 String packetLogString = getCurrentTime() + " [PacketLog send] " + message;
                 System.out.println(packetLogString);
-                if (ClientApi.isLogInFile())
+                if (ClientApi.getClientApi().isLogInFile())
                     addToLogger(packetLogString);
             }
         }
     }
 
     public static void logPacketsGet(String message) {
-        if(ClientApi.isConsoleLog()) {
-            if (ClientApi.isPacketLog()) {
+        if(ClientApi.getClientApi().isConsoleLog()) {
+            if (ClientApi.getClientApi().isPacketLog()) {
                 String packetLogString = getCurrentTime() + " [PacketLog get] " + message;
                 System.out.println(packetLogString);
-                if (ClientApi.isLogInFile())
+                if (ClientApi.getClientApi().isLogInFile())
                     addToLogger(packetLogString);
             }
         }
     }
 
     public static void error(String message) {
-        if(ClientApi.isConsoleLog()) {
+        if(ClientApi.getClientApi().isConsoleLog()) {
             String errorString = getCurrentTime() + " [Error] " + message;
             System.out.println(errorString);
-            if (ClientApi.isLogInFile())
+            if (ClientApi.getClientApi().isLogInFile())
                 addToLogger(errorString);
         }
     }
@@ -65,7 +65,7 @@ public class Logger {
 
     private static void addToLogger(String message) {
         if (loggerList.size() >= 1000) {
-            ClientApi.saveCurrentLog();
+            ClientApi.getClientApi().saveCurrentLog();
             loggerList.clear();
             info("Auto save log");
             loggerList.add(message);
@@ -76,14 +76,14 @@ public class Logger {
 
     public void saveLog() {
         String createFileName = getCurrentTime().replace("/", "-").replace(" ", "-").replace(":", ".") + ".log";
-        String fileName = ClientApi.getLogPath().endsWith("/") ? ClientApi.getLogPath() + createFileName : ClientApi.getLogPath() + "/".concat(createFileName);
+        String fileName = ClientApi.getClientApi().getLogPath().endsWith("/") ? ClientApi.getClientApi().getLogPath() + createFileName : ClientApi.getClientApi().getLogPath() + "/".concat(createFileName);
         File file = new File(fileName);
         if (file.exists()) {
             error("File already exists");
             return;
         }
         try {
-            Path path = Paths.get(ClientApi.getLogPath());
+            Path path = Paths.get(ClientApi.getClientApi().getLogPath());
             if (!Files.exists(path)) {
                 Files.createDirectories(path);
             }
